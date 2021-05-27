@@ -29,6 +29,7 @@
 #define fr_off LL_GPIO_ResetOutputPin(freq_l_GPIO_Port, freq_l_Pin)
 #define vac_on LL_GPIO_SetOutputPin(vac_l_GPIO_Port,vac_l_Pin)
 #define vac_off LL_GPIO_ResetOutputPin(vac_l_GPIO_Port,vac_l_Pin)
+#define vac_toggle LL_GPIO_TogglePin(vac_l_GPIO_Port,vac_l_Pin)
 
 #define start_on LL_GPIO_SetOutputPin(start_GPIO_Port, start_Pin)
 #define start_off LL_GPIO_ResetOutputPin(start_GPIO_Port, start_Pin)
@@ -52,9 +53,9 @@
 #define ol_err !((LL_GPIO_ReadInputPort(ol_GPIO_Port)) & (1<<1))
 
 
-#define vbat_min 1.83
+#define vbat_min 2.0
 #define vdyn_min 2.16
-#define vac_min 2.1
-#define vac_max 2.9
+#define vac_min 1.93
+#define vac_max 2.45
 
 #endif /* INC_MACRO_H_ */

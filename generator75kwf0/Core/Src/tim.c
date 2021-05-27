@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    dma.c
+  * @file    tim.c
   * @brief   This file provides code for the configuration
-  *          of all the requested memory to memory DMA transfers.
+  *          of the TIM instances.
   ******************************************************************************
   * @attention
   *
@@ -18,39 +18,38 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "dma.h"
+#include "tim.h"
 
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 
-/*----------------------------------------------------------------------------*/
-/* Configure DMA                                                              */
-/*----------------------------------------------------------------------------*/
+/* TIM3 init function */
+void MX_TIM3_Init(void)
+{
+  LL_TIM_InitTypeDef TIM_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
+
+  /* TIM3 interrupt Init */
+  NVIC_SetPriority(TIM3_IRQn, 0);
+  NVIC_EnableIRQ(TIM3_IRQn);
+
+  TIM_InitStruct.Prescaler = 799;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  TIM_InitStruct.Autoreload = 19;
+  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  LL_TIM_Init(TIM3, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM3);
+  LL_TIM_SetClockSource(TIM3, LL_TIM_CLOCKSOURCE_INTERNAL);
+  LL_TIM_SetTriggerOutput(TIM3, LL_TIM_TRGO_RESET);
+  LL_TIM_DisableMasterSlaveMode(TIM3);
+
+}
 
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
-
-/**
-  * Enable DMA controller clock
-  */
-void MX_DMA_Init(void)
-{
-
-  /* Init with LL driver */
-  /* DMA controller clock enable */
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
-
-  /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  NVIC_SetPriority(DMA1_Channel1_IRQn, 0);
-  NVIC_EnableIRQ(DMA1_Channel1_IRQn);
-
-}
-
-/* USER CODE BEGIN 2 */
-
-/* USER CODE END 2 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

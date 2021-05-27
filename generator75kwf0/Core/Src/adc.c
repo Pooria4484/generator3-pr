@@ -83,7 +83,7 @@ void MX_ADC_Init(void)
   LL_ADC_REG_SetSequencerChAdd(ADC1, LL_ADC_CHANNEL_4);
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
-  ADC_InitStruct.Clock = LL_ADC_CLOCK_ASYNC;
+  ADC_InitStruct.Clock = LL_ADC_CLOCK_SYNC_PCLK_DIV4;
   ADC_InitStruct.Resolution = LL_ADC_RESOLUTION_12B;
   ADC_InitStruct.DataAlignment = LL_ADC_DATA_ALIGN_RIGHT;
   ADC_InitStruct.LowPowerMode = LL_ADC_LP_MODE_NONE;
@@ -95,7 +95,7 @@ void MX_ADC_Init(void)
   ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
   LL_ADC_REG_Init(ADC1, &ADC_REG_InitStruct);
   LL_ADC_REG_SetSequencerScanDirection(ADC1, LL_ADC_REG_SEQ_SCAN_DIR_BACKWARD);
-  LL_ADC_SetSamplingTimeCommonChannels(ADC1, LL_ADC_SAMPLINGTIME_239CYCLES_5);
+  LL_ADC_SetSamplingTimeCommonChannels(ADC1, LL_ADC_SAMPLINGTIME_28CYCLES_5);
 
 }
 

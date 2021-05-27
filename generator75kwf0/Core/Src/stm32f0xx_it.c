@@ -26,9 +26,12 @@
 _Bool adc=0,working=0;
 uint16_t av=0;
 uint16_t vbat_int,vadc_int,vac_sample_int;
-extern uint16_t adc_val[3],freq,fr;
+extern uint16_t adc_val[3];
+extern volatile uint32_t freq,fr;
 volatile uint32_t thick=0,working_time=0;
-
+extern float samples[80];
+extern float vbat,vadc,vac_sample;
+extern uint32_t sample_cnt;
 
 /* USER CODE END Includes */
 
@@ -157,13 +160,34 @@ void DMA1_Channel1_IRQHandler(void)
 
 	if(LL_DMA_IsActiveFlag_TC1(DMA1) == 1)
 	{
-		if(!adc)
-		{
-			adc=1;
-			vac_sample_int=adc_val[2];
-			vadc_int=adc_val[1];
-			vbat_int=adc_val[0];
+		//if(!adc)
+		//{
+		//adc=1;
+		vac_sample_int=adc_val[2];
+		vadc_int=adc_val[1];
+		vbat_int=adc_val[0];
+		//new_val=1;
+		vac_sample=vac_sample_int*(float)(3.3/4096);
+//		if(vac_sample<2.5){
+//			pulse=1;
+//		}else{
+//			if(vac_sample>2.9 && pulse){
+//				fr++;
+//				pulse=0;
+//			}
+//		}
+		samples[sample_cnt++]=vac_sample;
+		if(sample_cnt==80){
+			sample_cnt=0;
+			//min_sample=cal_min(samples);
+			//if(min_sample)
 		}
+
+
+
+		vadc=vadc_int*(float)(3.3/4096);
+		adc=0;
+		//}
 		/* Clear flag DMA transfer complete */
 		LL_DMA_ClearFlag_TC1(DMA1);
 	}

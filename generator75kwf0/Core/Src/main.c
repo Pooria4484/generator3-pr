@@ -27,6 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#define turn_off gov_on;is_off=1;
 #define report 0
 #if report==1
 #include "string.h"
@@ -69,15 +70,20 @@ void print(char* str);
 extern _Bool adc,working;
 float vbat,vadc,vac_sample;
 extern uint16_t vbat_int,vadc_int,vac_sample_int;
-extern volatile uint32_t thick;
-volatile uint32_t old_thick=0,mscnt=0,start_cnt=0;
+extern volatile uint32_t thick,working_time;
+volatile uint32_t old_thick=0,mscnt=0,start_cnt=0,mute_cnt=0;
 void leds_test();
 void adc_init();
 _Bool check_err();
-_Bool mute=0,new_val=0;
+_Bool mute=0,new_val=0,oil_err_flag=0,
+		feul_err_flag=0,emr_err_flag=0,
+		dyn_err_flag=0,water_err_flag=0,
+		freq_err_flag=0,vac_err_high_flag=0,vac_err_low_flag=0,
+		ol_err_flag=0,bat_err_flag=0,is_off=0;
 float samples[80];
-uint8_t sample_cnt=0;
-uint16_t fr=0,pulse=0,freq=0;
+float min_sample=0;
+uint32_t sample_cnt=0,err_cnt=0;
+volatile uint32_t fr=0,pulse=0,freq=0,fr_err_cnt=0,off_delay_cnt=0;
 /* USER CODE END 0 */
 
 /**
@@ -96,7 +102,7 @@ int main(void)
 
 	LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_SYSCFG);
 	LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
-
+	working=1;
 	/* System interrupt init*/
 
 	/* USER CODE BEGIN Init */
@@ -127,18 +133,57 @@ int main(void)
 	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
+		if(is_off){
+			off_delay_cnt++;
+			if(off_delay_cnt>5000){
+				gov_off;
+			}
+		}
 		if(check_err()){
+			if(mscnt%250==0)
+			{
+				pwr_off;
+				er_toggle;
+				if(vac_err_low_flag){
+					vac_toggle;
+				}
+			}
+			pwr_off;
 			if(working){
 				if(!mute)
 				{
 					siren_on;
 					if(isMutePressed){
-						mute=1;
+						mute_cnt++;
+						if (mute_cnt>3000){
+							//turn off
+							if(!is_off)
+								turn_off;
+						}
+						else if(mute_cnt>300){
+							mute=1;
+						}
+					}else{
+						mute_cnt=0;
 					}
 				}
 				else
 				{
 					siren_off;
+				}
+
+				if(dyn_err_flag){
+					if(oil_err_flag||water_err_flag||ol_err_flag||emr_err_flag||freq_err_flag||vac_err_high_flag||vac_err_low_flag){
+						//turn off
+						if(!is_off)
+							turn_off;
+					}else{
+
+					}
+				}else{
+					//turn off
+					if(!is_off)
+						turn_off;
 				}
 			}else{
 				if(isStartPressed){
@@ -155,16 +200,10 @@ int main(void)
 					}
 				}
 			}
-			if(mscnt%250==0)
-			{
-				pwr_off;
-				er_toggle;
-			}
-
 
 		}else{
 			er_off;
-			siren_off;
+ 			siren_off;
 			mute=0;
 			if(working){
 				if(mscnt%250==0)
@@ -184,6 +223,16 @@ int main(void)
 					start_off;
 					start_cnt=0;
 				}
+			}
+
+			if(isMutePressed){
+				mute_cnt++;
+				if(mute_cnt>3000){
+					//turn off
+					turn_off;
+				}
+			}else{
+				mute_cnt=0;
 			}
 		}
 
@@ -281,107 +330,139 @@ float cal_min(float*val){
 
 _Bool check_err(){
 	_Bool flag=0;
-	float min_sample=0;
 	if(adc){
-		new_val=1;
-		vac_sample=vac_sample_int*(float)(3.3/4096);
-		if(vac_sample<2.5){
-			pulse=1;
-		}else{
-			if(vac_sample>2.9 && pulse){
-				fr++;
-				pulse=0;
-			}
-		}
-		samples[sample_cnt++]=vac_sample;
-		if(sample_cnt==80){
-			sample_cnt=0;
-			min_sample=cal_min(samples);
-			//if(min_sample)
-		}
 
-
-
-		vadc=vadc_int*(float)(3.3/4096);
-		adc=0;
 
 	}
 	if(working){
 		if(oil_err){
 			oil_on;
+			oil_err_flag=1;
+			//err_cnt++;
 			flag=1;
 		}else{
+			oil_err_flag=0;
 			oil_off;
 		}
 		if(new_val){
 			new_val=0;
 			vbat=vbat_int*(float)(3.3/4096);
-//			vbat*=5.54;
-//			vbat+=0.6;
+			//			vbat*=5.54;
+			//			vbat+=0.6;
 		}
-		if(vbat<vdyn_min || dyn_err){
+		if((vbat<vdyn_min && working_time>10000) || dyn_err){
 			bat_on;
+			dyn_err_flag=1;
+
 			flag=1;
 		}else{
+			dyn_err_flag=0;
 			bat_off;
 		}
 
-		if(min_sample<vac_min || min_sample>vac_max){
+		if((min_sample<vac_min)){
 			vac_on;
 			flag=1;
+			//err_cnt++;
+			vac_err_high_flag=1;
 		}else{
 			vac_off;
+			vac_err_high_flag=0;
 		}
 
-		if(freq<195||freq>205){
-			fr_on;
+		if((min_sample>vac_max)){
 			flag=1;
+			//err_cnt++;
+			vac_err_low_flag=1;
 		}else{
-			fr_off;
+			vac_off;
+			vac_err_low_flag=0;
 		}
-	}else{
+
+		if((freq<47||freq>53)&&(working_time>300000)){//
+			//fr_on;
+			fr_err_cnt++;
+			//flag=1;
+			//err_cnt++;
+			//freq_err_flag=1;
+		}else{
+			fr_err_cnt=0;
+			fr_off;
+			freq_err_flag=0;
+		}
+	}else{//not working
 		if(new_val){
 			new_val=0;
 			vbat=vbat_int*(float)(3.3/4096);
-//			vbat*=5.54;
-//			vbat+=0.6;
+			//			vbat*=5.54;
+			//			vbat+=0.6;
 		}
 		if(vbat<vbat_min){
 			bat_on;
 			flag=1;
+			//err_cnt++;
+			bat_err_flag=1;
 		}else{
 			bat_off;
+			bat_err_flag=0;
 		}
 
 	}
 
 	if(water_err){
 		water_on;
+		water_err_flag=1;
 		flag=1;
+		//err_cnt++;
 	}else{
 		water_off;
+		water_err_flag=0;
 	}
 
 	if(feul_err){
 		feul_on;
 		flag=1;
+		//err_cnt++;
+		feul_err_flag=1;
 	}else{
 		feul_off;
+		feul_err_flag=0;
 	}
 
 	if(emr_err){
 		emr_on;
 		flag=1;
+		//err_cnt++;
+		emr_err_flag=1;
 	}else{
 		emr_off;
+		emr_err_flag=0;
 	}
 
 
 	if(ol_err){
+		ol_err_flag=1;
 		ol_on;
 		flag=1;
+		//err_cnt++;
 	}else{
+		ol_err_flag=0;
 		ol_off;
+	}
+
+	if(fr_err_cnt>3000){
+		flag=1;
+		err_cnt++;
+		fr_on;
+	}
+
+	if(!flag){
+		err_cnt=0;
+	}else{
+		err_cnt++;
+		if(err_cnt<100){
+			flag=0;
+		}
 	}
 	return flag;
 }
