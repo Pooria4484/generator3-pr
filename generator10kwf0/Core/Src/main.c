@@ -27,7 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#define turn_off gov_off;is_off=1;
+#define turn_off gov_on;is_off=1;
 #define report 0
 #if report==1
 #include "string.h"
@@ -125,9 +125,7 @@ int main(void)
 	MX_TIM3_Init();
 	/* USER CODE BEGIN 2 */
 	//print("start\r\n");
-	er_on;
-	ms_delay(3000);
-	er_off;
+
 	leds_test();
 	adc_init();
 	/* USER CODE END 2 */
@@ -239,7 +237,6 @@ int main(void)
 				if((isStartPressed)&&!(vbat>vdyn_min && freq>150)){//if(vbat>vdyn_min || freq>150)
 					if(start_cnt<20000){
 						start_on;
-						gov_on;
 						starting=1;
 					}else{
 						start_off;
@@ -254,7 +251,7 @@ int main(void)
 
 				if(isMutePressed){
 					mute_cnt++;
-					if(mute_cnt>3000){
+					if(mute_cnt>1500){
 						//turn off
 						turn_off;
 					}
@@ -393,7 +390,7 @@ _Bool check_err(){
 
 
 		if(working){
-			if(oil_err){
+			if((oil_err)&& working_time>3000){
 				oil_on;
 				oil_err_flag=1;
 				//err_cnt++;
@@ -409,7 +406,7 @@ _Bool check_err(){
 				//			vbat*=5.54;
 				//			vbat+=0.6;
 			}
-			if((vbat<vdyn_min && working_time>20000) || dyn_err){
+			if((vbat<vdyn_min && working_time>10000) || dyn_err){
 				bat_on;
 				dyn_err_flag=1;
 
@@ -419,14 +416,14 @@ _Bool check_err(){
 				bat_off;
 			}
 
-			if((min_sample<vac_min)&& working_time>20000){
+			if((min_sample<vac_min)&& working_time>200000){
 				//vac_on;
 				//flag=1;
 				//err_cnt++;
 				vac_err_high_flag=1;
 			}
 
-			if((min_sample>vac_max)&& working_time>20000){
+			if((min_sample>vac_max)&& working_time>200000){
 				//flag=1;
 				//err_cnt++;
 				vac_err_low_flag=1;
@@ -438,7 +435,7 @@ _Bool check_err(){
 			}else{
 				vac_err_cnt++;
 			}
-			if((freq<192||freq>208)&&(working_time>20000)){//
+			if((freq<192||freq>208)&&(working_time>200000)){//
 				//fr_on;
 				fr_err_cnt++;
 				//flag=1;
@@ -454,6 +451,7 @@ _Bool check_err(){
 
 
 			if(new_val){
+
 				new_val=0;
 				vbat=vbat_int*(float)(3.3/4096);
 				//			vbat*=5.54;

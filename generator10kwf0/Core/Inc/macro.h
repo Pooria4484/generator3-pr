@@ -40,8 +40,8 @@
 #define siren_on LL_GPIO_SetOutputPin(sir_GPIO_Port,sir_Pin)
 #define siren_off LL_GPIO_ResetOutputPin(sir_GPIO_Port,sir_Pin)
 
-#define isStartPressed !((LL_GPIO_ReadInputPort(btn_start_GPIO_Port)) & (1<<3))
-#define isMutePressed !((LL_GPIO_ReadInputPort(mute_GPIO_Port)) & (1<<15))
+#define isStartPressed !((LL_GPIO_ReadInputPort(mute_GPIO_Port)) & (1<<15))
+#define isMutePressed !((LL_GPIO_ReadInputPort(btn_start_GPIO_Port)) & (1<<3))
 
 #define ms_delay(d) LL_mDelay((d))
 
@@ -53,8 +53,8 @@
 #define ol_err !((LL_GPIO_ReadInputPort(ol_GPIO_Port)) & (1<<1))
 
 
-#define vbat_min 0.924
-#define vdyn_min 1.1
+#define vbat_min 1.0
+#define vdyn_min 1.26//26 volt
 #define vac_min 0.35
 #define vac_max 1.27
 

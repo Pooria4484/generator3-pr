@@ -251,7 +251,7 @@ int main(void)
 
 				if(isMutePressed){
 					mute_cnt++;
-					if(mute_cnt>3000){
+					if(mute_cnt>1500){
 						//turn off
 						turn_off;
 					}
@@ -390,7 +390,7 @@ _Bool check_err(){
 
 
 		if(working){
-			if(oil_err){
+			if((oil_err)&& working_time>3000){
 				oil_on;
 				oil_err_flag=1;
 				//err_cnt++;
@@ -406,7 +406,7 @@ _Bool check_err(){
 				//			vbat*=5.54;
 				//			vbat+=0.6;
 			}
-			if((vbat<vdyn_min && working_time>20000) || dyn_err){
+			if((vbat<vdyn_min && working_time>10000) || dyn_err){
 				bat_on;
 				dyn_err_flag=1;
 
@@ -416,14 +416,14 @@ _Bool check_err(){
 				bat_off;
 			}
 
-			if((min_sample<vac_min)&& working_time>20000){
+			if((min_sample<vac_min)&& working_time>200000){
 				//vac_on;
 				//flag=1;
 				//err_cnt++;
 				vac_err_high_flag=1;
 			}
 
-			if((min_sample>vac_max)&& working_time>20000){
+			if((min_sample>vac_max)&& working_time>200000){
 				//flag=1;
 				//err_cnt++;
 				vac_err_low_flag=1;
@@ -435,7 +435,7 @@ _Bool check_err(){
 			}else{
 				vac_err_cnt++;
 			}
-			if((freq<192||freq>208)&&(working_time>20000)){//
+			if((freq<192||freq>208)&&(working_time>200000)){//
 				//fr_on;
 				fr_err_cnt++;
 				//flag=1;
@@ -451,6 +451,7 @@ _Bool check_err(){
 
 
 			if(new_val){
+
 				new_val=0;
 				vbat=vbat_int*(float)(3.3/4096);
 				//			vbat*=5.54;
