@@ -61,8 +61,8 @@ all: main-build
 main-build: generator10kwf0.elf secondary-outputs
 
 # Tool invocations
-generator10kwf0.elf: $(OBJS) $(USER_OBJS) /home/pooria/STM32CubeIDE/workspace_1.5.0/Generator3/generator3-pr/generator10kwf0/STM32F030C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "generator10kwf0.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/home/pooria/STM32CubeIDE/workspace_1.5.0/Generator3/generator3-pr/generator10kwf0/STM32F030C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="generator10kwf0.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+generator10kwf0.elf: $(OBJS) $(USER_OBJS) /home/pooria/Stm32/projects/generator3-pr/generator10kwf0/STM32F030C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "generator10kwf0.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"/home/pooria/Stm32/projects/generator3-pr/generator10kwf0/STM32F030C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="generator10kwf0.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
