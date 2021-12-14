@@ -54,7 +54,7 @@
 
 
 #define vbat_min 1.0
-#define vdyn_min 1.26//26 volt
+#define vdyn_min 1.15//24.5 volt
 #define vac_min 0.35
 #define vac_max 1.27
 
